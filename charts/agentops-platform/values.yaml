@@ -59,7 +59,10 @@ tempo:
             # -- HTTP endpoint for OTLP ingest
             endpoint: "0.0.0.0:4318"
 
-    # -- Enable trace search (required for console Traces panel)
+    # -- Enable trace search (required for console Traces panel).
+    # Note: In Tempo 2.x search is always enabled. The BFF injects a default
+    # time range (last 72h) so that Tempo searches backend blocks, not just
+    # in-memory ingester data.
     searchEnabled: true
 
     # -- Metrics generator (disabled — keep footprint minimal)
