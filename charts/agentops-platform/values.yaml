@@ -1,0 +1,91 @@
+# =============================================================================
+# AgentOps Platform — Umbrella Values
+# =============================================================================
+# Override subchart values by nesting under the subchart name.
+# e.g. agentops-operator.image.tag or tempo.tempo.storage.trace.backend
+
+# -- Namespace where agent workloads run (informational — operator creates it)
+agentNamespace: agents
+
+# =============================================================================
+# AgentOps Operator
+# =============================================================================
+agentops-operator:
+  # -- Enable the AgentOps operator subchart
+  enabled: true
+
+  image:
+    repository: ghcr.io/samyn92/agentops-operator
+    pullPolicy: IfNotPresent
+    # -- Override tag (defaults to chart appVersion)
+    tag: ""
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+# =============================================================================
+# Tempo — Distributed Tracing
+# =============================================================================
+tempo:
+  # -- Enable Grafana Tempo for trace collection
+  enabled: true
+
+  tempo:
+    # -- Retention period for traces
+    retention: 72h
+
+    storage:
+      trace:
+        # -- Storage backend: local, s3, gcs, azure
+        backend: local
+        local:
+          path: /var/tempo/traces
+        wal:
+          path: /var/tempo/wal
+
+    # -- OTLP receiver configuration
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            # -- gRPC endpoint for OTLP ingest (agents send traces here)
+            endpoint: "0.0.0.0:4317"
+          http:
+            # -- HTTP endpoint for OTLP ingest
+            endpoint: "0.0.0.0:4318"
+
+    # -- Enable trace search (required for console Traces panel)
+    searchEnabled: true
+
+    # -- Metrics generator (disabled — keep footprint minimal)
+    metricsGenerator:
+      enabled: false
+
+  # -- Tempo server settings
+  server:
+    http_listen_port: 3200
+
+  # -- Persistence for local storage backend
+  persistence:
+    enabled: true
+    size: 5Gi
+    # -- Storage class (leave empty for cluster default)
+    storageClassName: ""
+
+  # -- Resource limits for Tempo pod
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+  # -- Service configuration
+  service:
+    type: ClusterIP

@@ -1,0 +1,36 @@
+apiVersion: v2
+name: agentops-platform
+description: Umbrella Helm chart for the AgentOps platform — operator, observability, and infrastructure
+type: application
+version: 0.1.0
+appVersion: "0.7.0"
+kubeVersion: ">=1.28.0-0"
+home: https://github.com/samyn92/agentops-platform
+sources:
+  - https://github.com/samyn92/agentops-platform
+  - https://github.com/samyn92/agentops-core
+  - https://github.com/samyn92/agentops-console
+  - https://github.com/samyn92/agentops-runtime
+maintainers:
+  - name: samyn92
+keywords:
+  - agentops
+  - platform
+  - ai-agents
+  - kubernetes
+  - operator
+  - observability
+  - tracing
+
+dependencies:
+  # -- AgentOps operator: CRDs, controllers, RBAC
+  - name: agentops-operator
+    version: "0.7.0"
+    repository: "oci://ghcr.io/samyn92/charts"
+    condition: agentops-operator.enabled
+
+  # -- Grafana Tempo: distributed tracing backend (monolithic mode)
+  - name: tempo
+    version: "1.24.4"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: tempo.enabled

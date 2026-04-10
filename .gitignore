@@ -1,0 +1,9 @@
+# Helm dependency archives (downloaded by `helm dependency build`)
+charts/agentops-platform/charts/*.tgz
+charts/agentops-platform/Chart.lock
+
+# Packaged chart output
+dist/
+
+# OS files
+.DS_Store
