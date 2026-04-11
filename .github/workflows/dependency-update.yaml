@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install yq
+        uses: mikefarah/yq@v4
+
       - name: Update dependency version in Chart.yaml
         env:
           COMPONENT: ${{ github.event.client_payload.component }}
@@ -24,12 +27,8 @@ jobs:
           CHART="charts/agentops-platform/Chart.yaml"
           echo "Bumping ${COMPONENT} to ${VERSION} (from ${SOURCE})"
 
-          # Use yq to update the specific dependency version
-          # Match by name to avoid sed fragility
-          pip install yq
-          yq -y --arg comp "$COMPONENT" --arg ver "$VERSION" \
-            '(.dependencies[] | select(.name == $comp)).version = $ver' \
-            "$CHART" > "$CHART.tmp" && mv "$CHART.tmp" "$CHART"
+          # Use yq (Go) to update in-place — preserves comments, quotes, formatting
+          yq -i "(.dependencies[] | select(.name == env(COMPONENT))).version = env(VERSION)" "$CHART"
 
           echo "Updated Chart.yaml:"
           cat "$CHART"
@@ -58,6 +57,9 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          add-paths: |
+            charts/agentops-platform/Chart.yaml
+            charts/agentops-platform/Chart.lock
           branch: deps/${{ github.event.client_payload.component }}-${{ github.event.client_payload.version }}
           commit-message: "deps: bump ${{ github.event.client_payload.component }} to ${{ github.event.client_payload.version }}"
           title: "deps: bump ${{ github.event.client_payload.component }} to ${{ github.event.client_payload.version }}"
