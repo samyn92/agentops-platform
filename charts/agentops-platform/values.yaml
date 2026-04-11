@@ -4,8 +4,19 @@
 # Override subchart values by nesting under the subchart name.
 # e.g. agentops-operator.image.tag or tempo.tempo.storage.trace.backend
 
-# -- Namespace where agent workloads run (informational — operator creates it)
+# =============================================================================
+# Global
+# =============================================================================
+global:
+  # -- Image pull secrets propagated to all sub-charts and inline templates
+  imagePullSecrets: []
+  # - name: ghcr-pull-secret
+
+# -- Namespace where agent workloads run (operator creates workloads here)
 agentNamespace: agents
+
+# -- Create the agent namespace as part of this release
+createNamespace: true
 
 # =============================================================================
 # AgentOps Operator
@@ -27,6 +38,99 @@ agentops-operator:
     requests:
       cpu: 10m
       memory: 64Mi
+
+# =============================================================================
+# AgentOps Console — Go BFF + SolidJS PWA
+# =============================================================================
+agentops-console:
+  # -- Enable the AgentOps console subchart
+  enabled: true
+
+  image:
+    repository: ghcr.io/samyn92/agentops-console
+    pullPolicy: IfNotPresent
+    # -- Override tag (defaults to chart appVersion)
+    tag: ""
+
+  # -- Console BFF environment variables
+  # Tempo and Engram URLs are auto-wired from the platform release context.
+  # Override here only if you run Tempo/Engram outside this release.
+  env:
+    - name: TEMPO_URL
+      value: ""       # auto-resolved at template time if empty (see NOTES.txt)
+    - name: ENGRAM_URL_OVERRIDE
+      value: ""       # auto-resolved at template time if empty
+
+  # -- Console settings
+  console:
+    # -- Restrict to a single namespace (empty = all)
+    namespace: ""
+    webDir: "/app/web/dist"
+    dev: false
+
+  # -- Service configuration
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8080
+
+  # -- Ingress for external access to the console
+  ingress:
+    enabled: false
+    className: ""
+    annotations: {}
+    hosts:
+      - host: agentops.local
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# =============================================================================
+# Engram — Memory Backend (inline templates, not a sub-chart)
+# =============================================================================
+engram:
+  # -- Enable the Engram memory backend
+  enabled: true
+
+  image:
+    # -- Engram container image
+    repository: ghcr.io/samyn92/engram
+    # -- Image tag
+    tag: latest
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+
+  # -- Persistence for Engram SQLite database
+  persistence:
+    # -- Storage size
+    size: 1Gi
+    # -- Storage class (leave empty for cluster default)
+    storageClassName: ""
+
+  # -- Resource requests and limits
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+  # -- Node selector
+  nodeSelector: {}
+  # -- Tolerations
+  tolerations: []
+  # -- Affinity rules
+  affinity: {}
 
 # =============================================================================
 # Tempo — Distributed Tracing
@@ -59,10 +163,7 @@ tempo:
             # -- HTTP endpoint for OTLP ingest
             endpoint: "0.0.0.0:4318"
 
-    # -- Enable trace search (required for console Traces panel).
-    # Note: In Tempo 2.x search is always enabled. The BFF injects a default
-    # time range (last 72h) so that Tempo searches backend blocks, not just
-    # in-memory ingester data.
+    # -- Enable trace search (required for console Traces panel)
     searchEnabled: true
 
     # -- Metrics generator (disabled — keep footprint minimal)

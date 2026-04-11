@@ -35,4 +35,35 @@ Common labels
 helm.sh/chart: {{ include "agentops-platform.chart" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.kubernetes.io/part-of: agentops-platform
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+{{- end }}
+
+{{/*
+Engram service name — used by both the Service template and the console env wiring.
+*/}}
+{{- define "agentops-platform.engram.serviceName" -}}
+{{- printf "%s-engram" (include "agentops-platform.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Engram in-cluster URL — resolved from the service name and agent namespace.
+*/}}
+{{- define "agentops-platform.engram.url" -}}
+{{- printf "http://%s.%s.svc.cluster.local:7437" (include "agentops-platform.engram.serviceName" .) .Values.agentNamespace }}
+{{- end }}
+
+{{/*
+Tempo in-cluster URL — resolved from the release name.
+*/}}
+{{- define "agentops-platform.tempo.url" -}}
+{{- printf "http://%s-tempo.%s.svc.cluster.local:3200" .Release.Name .Release.Namespace }}
+{{- end }}
+
+{{/*
+Tempo OTLP gRPC endpoint — for agent tracing.
+*/}}
+{{- define "agentops-platform.tempo.otlpEndpoint" -}}
+{{- printf "%s-tempo.%s.svc.cluster.local:4317" .Release.Name .Release.Namespace }}
 {{- end }}

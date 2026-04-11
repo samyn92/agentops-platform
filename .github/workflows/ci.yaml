@@ -30,5 +30,13 @@ jobs:
       - name: Helm Lint
         run: helm lint charts/agentops-platform
 
-      - name: Helm Template
+      - name: Helm Template (default values)
         run: helm template test charts/agentops-platform --namespace agent-system
+
+      - name: Helm Template (minimal — operator only)
+        run: |
+          helm template test charts/agentops-platform --namespace agent-system \
+            --set agentops-console.enabled=false \
+            --set engram.enabled=false \
+            --set tempo.enabled=false \
+            --set createNamespace=false

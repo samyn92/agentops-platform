@@ -1,0 +1,21 @@
+{{- if .Values.engram.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "agentops-platform.engram.serviceName" . }}
+  namespace: {{ .Values.agentNamespace }}
+  labels:
+    {{- include "agentops-platform.labels" . | nindent 4 }}
+    app.kubernetes.io/component: memory
+    app.kubernetes.io/name: engram
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 7437
+      targetPort: http
+      protocol: TCP
+  selector:
+    app.kubernetes.io/name: engram
+    app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}

@@ -39,6 +39,9 @@ jobs:
       - name: Login to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
+      - name: Add Grafana repo
+        run: helm repo add grafana https://grafana.github.io/helm-charts && helm repo update
+
       - name: Helm Dependency Build
         run: helm dependency build charts/agentops-platform
 

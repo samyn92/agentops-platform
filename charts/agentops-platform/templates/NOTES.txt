@@ -1,24 +1,56 @@
-AgentOps Platform has been installed.
+AgentOps Platform {{ .Chart.Version }} has been installed.
 
 Components:
 {{- if index .Values "agentops-operator" "enabled" }}
-  ✓ AgentOps Operator  — manages Agent, AgentRun, Channel, AgentTool, AgentResource CRDs
+  * AgentOps Operator  — manages Agent, AgentRun, Channel, AgentTool, AgentResource CRDs
+{{- end }}
+{{- if index .Values "agentops-console" "enabled" }}
+  * AgentOps Console   — web UI for managing and interacting with agents
+{{- end }}
+{{- if .Values.engram.enabled }}
+  * Engram             — memory backend (three-layer: working, short-term, long-term)
 {{- end }}
 {{- if .Values.tempo.enabled }}
-  ✓ Grafana Tempo       — trace backend (OTLP gRPC on :4317, HTTP query on :3200)
+  * Grafana Tempo      — trace backend (OTLP gRPC on :4317, HTTP query on :3200)
+{{- end }}
+
+{{- if index .Values "agentops-console" "enabled" }}
+
+Console access:
+{{- if (index .Values "agentops-console" "ingress" "enabled") }}
+  {{- range (index .Values "agentops-console" "ingress" "hosts") }}
+  http{{ if (index $.Values "agentops-console" "ingress" "tls") }}s{{ end }}://{{ .host }}
+  {{- end }}
+{{- else }}
+  kubectl port-forward svc/{{ .Release.Name }}-agentops-console -n {{ .Release.Namespace }} 8080:80
+  Then open http://localhost:8080
+{{- end }}
+{{- end }}
+
+{{- if .Values.engram.enabled }}
+
+Engram (in-cluster):
+  URL:  {{ include "agentops-platform.engram.url" . }}
+  Agents reference it via: memory.serverRef: {{ include "agentops-platform.engram.serviceName" . }}
 {{- end }}
 
 {{- if .Values.tempo.enabled }}
 
 Tempo endpoints (in-cluster):
-  OTLP gRPC:  tempo.{{ .Release.Namespace }}.svc.cluster.local:4317
-  HTTP Query: tempo.{{ .Release.Namespace }}.svc.cluster.local:3200
+  OTLP gRPC:  {{ include "agentops-platform.tempo.otlpEndpoint" . }}
+  HTTP Query: {{ include "agentops-platform.tempo.url" . }}
 
-To configure agent pods for tracing, the operator automatically injects:
-  OTEL_EXPORTER_OTLP_ENDPOINT=tempo.{{ .Release.Namespace }}.svc.cluster.local:4317
+The operator automatically injects into agent pods:
+  OTEL_EXPORTER_OTLP_ENDPOINT={{ include "agentops-platform.tempo.otlpEndpoint" . }}
   OTEL_SERVICE_NAME=<agent-name>
 {{- end }}
 
+Compatible runtime images:
+  ghcr.io/samyn92/agentops-runtime-fantasy:{{ .Chart.AppVersion }}
+
 Verify the installation:
   kubectl get pods -n {{ .Release.Namespace }}
+{{- if .Values.engram.enabled }}
+  kubectl get pods -n {{ .Values.agentNamespace }}
+{{- end }}
   kubectl get agents -A
