@@ -1,8 +1,7 @@
 apiVersion: v2
 name: agentops-platform
 description: >-
-  Umbrella Helm chart for the AgentOps platform — operator, console,
-  memory (Engram), and observability (Tempo). One install, full stack.
+  Umbrella Helm chart for the AgentOps platform — operator, console, memory (Engram), and observability (Tempo). One install, full stack.
 type: application
 version: 0.8.0
 appVersion: "0.8.0"
@@ -25,20 +24,17 @@ keywords:
   - memory
   - observability
   - tracing
-
 dependencies:
   # -- AgentOps operator: CRDs, controllers, RBAC
   - name: agentops-operator
     version: "0.7.0"
     repository: "oci://ghcr.io/samyn92/charts"
     condition: agentops-operator.enabled
-
   # -- AgentOps console: Go BFF + SolidJS PWA
   - name: agentops-console
-    version: "0.8.6"
+    version: "0.8.9"
     repository: "oci://ghcr.io/samyn92/charts"
     condition: agentops-console.enabled
-
   # -- Grafana Tempo: distributed tracing backend (monolithic mode)
   - name: tempo
     version: "1.24.4"
