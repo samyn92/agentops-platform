@@ -1,0 +1,47 @@
+name: Auto Release
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  auto-release:
+    name: Tag & Release
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'automated')
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: latest
+        run: |
+          TAG=$(git tag --sort=-v:refname | grep '^v' | head -1)
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Latest tag: ${TAG}"
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          CURRENT="${{ steps.latest.outputs.tag }}"
+          # Strip v prefix, split into parts
+          VERSION="${CURRENT#v}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_TAG="v${MAJOR}.${MINOR}.${NEW_PATCH}"
+          echo "version=${MAJOR}.${MINOR}.${NEW_PATCH}" >> "$GITHUB_OUTPUT"
+          echo "tag=${NEW_TAG}" >> "$GITHUB_OUTPUT"
+          echo "Bumping ${CURRENT} -> ${NEW_TAG}"
+
+      - name: Create and push tag
+        run: |
+          git tag ${{ steps.bump.outputs.tag }}
+          git push origin ${{ steps.bump.outputs.tag }}
