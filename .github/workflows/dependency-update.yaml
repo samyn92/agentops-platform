@@ -1,0 +1,73 @@
+name: Dependency Update
+
+on:
+  repository_dispatch:
+    types: [dependency-update]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump-dependency:
+    name: Bump ${{ github.event.client_payload.component }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update dependency version in Chart.yaml
+        env:
+          COMPONENT: ${{ github.event.client_payload.component }}
+          VERSION: ${{ github.event.client_payload.version }}
+          SOURCE: ${{ github.event.client_payload.source }}
+        run: |
+          CHART="charts/agentops-platform/Chart.yaml"
+          echo "Bumping ${COMPONENT} to ${VERSION} (from ${SOURCE})"
+
+          # Use yq to update the specific dependency version
+          # Match by name to avoid sed fragility
+          pip install yq
+          yq -y --arg comp "$COMPONENT" --arg ver "$VERSION" \
+            '(.dependencies[] | select(.name == $comp)).version = $ver' \
+            "$CHART" > "$CHART.tmp" && mv "$CHART.tmp" "$CHART"
+
+          echo "Updated Chart.yaml:"
+          cat "$CHART"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.17.3
+
+      - name: Login to GHCR (for OCI deps)
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Add Grafana repo
+        run: helm repo add grafana https://grafana.github.io/helm-charts && helm repo update
+
+      - name: Helm Dependency Update
+        run: helm dependency update charts/agentops-platform
+
+      - name: Helm Lint
+        run: helm lint charts/agentops-platform
+
+      - name: Helm Template
+        run: helm template test charts/agentops-platform --namespace agent-system
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: deps/${{ github.event.client_payload.component }}-${{ github.event.client_payload.version }}
+          commit-message: "deps: bump ${{ github.event.client_payload.component }} to ${{ github.event.client_payload.version }}"
+          title: "deps: bump ${{ github.event.client_payload.component }} to ${{ github.event.client_payload.version }}"
+          body: |
+            Automated dependency update triggered by [${{ github.event.client_payload.source }}](https://github.com/samyn92/${{ github.event.client_payload.source }}) release.
+
+            | Component | Version |
+            |-----------|---------|
+            | `${{ github.event.client_payload.component }}` | `${{ github.event.client_payload.version }}` |
+
+            Helm lint and template checks passed.
+          labels: dependencies,automated
+          delete-branch: true

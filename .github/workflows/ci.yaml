@@ -37,6 +37,6 @@ jobs:
         run: |
           helm template test charts/agentops-platform --namespace agent-system \
             --set agentops-console.enabled=false \
-            --set engram.enabled=false \
+            --set memory.enabled=false \
             --set tempo.enabled=false \
             --set createNamespace=false

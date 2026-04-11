@@ -105,8 +105,8 @@ memory:
   image:
     # -- Memory service container image
     repository: ghcr.io/samyn92/agentops-memory
-    # -- Image tag
-    tag: v0.1.0
+    # -- Image tag (defaults to chart appVersion when empty)
+    tag: ""
     # -- Image pull policy
     pullPolicy: IfNotPresent
 
