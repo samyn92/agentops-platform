@@ -18,20 +18,28 @@ jobs:
       - name: Install yq
         uses: mikefarah/yq@v4
 
-      - name: Update dependency version in Chart.yaml
+      - name: Update dependency version
         env:
           COMPONENT: ${{ github.event.client_payload.component }}
           VERSION: ${{ github.event.client_payload.version }}
           SOURCE: ${{ github.event.client_payload.source }}
         run: |
           CHART="charts/agentops-platform/Chart.yaml"
+          VALUES="charts/agentops-platform/values.yaml"
           echo "Bumping ${COMPONENT} to ${VERSION} (from ${SOURCE})"
 
-          # Use yq (Go) to update in-place — preserves comments, quotes, formatting
-          yq -i "(.dependencies[] | select(.name == env(COMPONENT))).version = env(VERSION)" "$CHART"
-
-          echo "Updated Chart.yaml:"
-          cat "$CHART"
+          # Memory is an inline template (not a subchart dependency).
+          # Its version lives in values.yaml as memory.image.tag.
+          # All other components are subchart dependencies in Chart.yaml.
+          if [ "${COMPONENT}" = "agentops-memory" ]; then
+            yq -i '.memory.image.tag = env(VERSION)' "$VALUES"
+            echo "Updated values.yaml memory.image.tag:"
+            yq '.memory.image' "$VALUES"
+          else
+            yq -i "(.dependencies[] | select(.name == env(COMPONENT))).version = env(VERSION)" "$CHART"
+            echo "Updated Chart.yaml:"
+            cat "$CHART"
+          fi
 
       - name: Install Helm
         uses: azure/setup-helm@v4
@@ -61,6 +69,7 @@ jobs:
           add-paths: |
             charts/agentops-platform/Chart.yaml
             charts/agentops-platform/Chart.lock
+            charts/agentops-platform/values.yaml
           branch: deps/${{ github.event.client_payload.component }}-${{ github.event.client_payload.version }}
           commit-message: "deps: bump ${{ github.event.client_payload.component }} to ${{ github.event.client_payload.version }}"
           title: "deps: bump ${{ github.event.client_payload.component }} to ${{ github.event.client_payload.version }}"

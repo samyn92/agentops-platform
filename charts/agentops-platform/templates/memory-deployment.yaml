@@ -32,7 +32,7 @@ spec:
         fsGroup: 65534
       containers:
         - name: memory
-          image: "{{ .Values.memory.image.repository }}:{{ .Values.memory.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.memory.image.repository }}:{{ .Values.memory.image.tag }}"
           imagePullPolicy: {{ .Values.memory.image.pullPolicy }}
           env:
             - name: MEMORY_DB_PATH
