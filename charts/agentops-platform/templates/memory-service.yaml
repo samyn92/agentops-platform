@@ -1,13 +1,13 @@
-{{- if .Values.engram.enabled }}
+{{- if .Values.memory.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "agentops-platform.engram.serviceName" . }}
+  name: {{ include "agentops-platform.memory.serviceName" . }}
   namespace: {{ .Values.agentNamespace }}
   labels:
     {{- include "agentops-platform.labels" . | nindent 4 }}
     app.kubernetes.io/component: memory
-    app.kubernetes.io/name: engram
+    app.kubernetes.io/name: agentops-memory
 spec:
   type: ClusterIP
   ports:
@@ -16,6 +16,6 @@ spec:
       targetPort: http
       protocol: TCP
   selector:
-    app.kubernetes.io/name: engram
+    app.kubernetes.io/name: agentops-memory
     app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}

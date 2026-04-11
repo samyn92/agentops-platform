@@ -1,23 +1,23 @@
-{{- if .Values.engram.enabled }}
+{{- if .Values.memory.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "agentops-platform.fullname" . }}-engram
+  name: {{ include "agentops-platform.fullname" . }}-memory
   namespace: {{ .Values.agentNamespace }}
   labels:
     {{- include "agentops-platform.labels" . | nindent 4 }}
     app.kubernetes.io/component: memory
-    app.kubernetes.io/name: engram
+    app.kubernetes.io/name: agentops-memory
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: engram
+      app.kubernetes.io/name: agentops-memory
       app.kubernetes.io/instance: {{ .Release.Name }}
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: engram
+        app.kubernetes.io/name: agentops-memory
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/component: memory
         agents.agentops.io/component: memory
@@ -28,17 +28,21 @@ spec:
       {{- end }}
       securityContext:
         runAsNonRoot: true
-        runAsUser: 1000
-        fsGroup: 1000
+        runAsUser: 65534
+        fsGroup: 65534
       containers:
-        - name: engram
-          image: "{{ .Values.engram.image.repository }}:{{ .Values.engram.image.tag }}"
-          imagePullPolicy: {{ .Values.engram.image.pullPolicy }}
+        - name: memory
+          image: "{{ .Values.memory.image.repository }}:{{ .Values.memory.image.tag }}"
+          imagePullPolicy: {{ .Values.memory.image.pullPolicy }}
           env:
-            - name: ENGRAM_DATA_DIR
-              value: /data
-            - name: ENGRAM_HOST
-              value: "0.0.0.0"
+            - name: MEMORY_DB_PATH
+              value: /data/memory.db
+            - name: MEMORY_LISTEN
+              value: ":7437"
+            {{- if $.Values.tempo.enabled }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ include "agentops-platform.tempo.otlpEndpoint" $ }}
+            {{- end }}
           ports:
             - name: http
               containerPort: 7437
@@ -47,16 +51,16 @@ spec:
             httpGet:
               path: /health
               port: http
-            initialDelaySeconds: 5
+            initialDelaySeconds: 3
             periodSeconds: 30
           readinessProbe:
             httpGet:
               path: /health
               port: http
-            initialDelaySeconds: 2
+            initialDelaySeconds: 1
             periodSeconds: 10
           resources:
-            {{- toYaml .Values.engram.resources | nindent 12 }}
+            {{- toYaml .Values.memory.resources | nindent 12 }}
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
@@ -68,16 +72,16 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: {{ include "agentops-platform.fullname" . }}-engram-data
-      {{- with .Values.engram.nodeSelector }}
+            claimName: {{ include "agentops-platform.fullname" . }}-memory-data
+      {{- with .Values.memory.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.engram.tolerations }}
+      {{- with .Values.memory.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.engram.affinity }}
+      {{- with .Values.memory.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}

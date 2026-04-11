@@ -41,17 +41,17 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 
 {{/*
-Engram service name — used by both the Service template and the console env wiring.
+Memory service name — used by both the Service template and the console env wiring.
 */}}
-{{- define "agentops-platform.engram.serviceName" -}}
-{{- printf "%s-engram" (include "agentops-platform.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- define "agentops-platform.memory.serviceName" -}}
+{{- printf "%s-memory" (include "agentops-platform.fullname" .) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
-Engram in-cluster URL — resolved from the service name and agent namespace.
+Memory in-cluster URL — resolved from the service name and agent namespace.
 */}}
-{{- define "agentops-platform.engram.url" -}}
-{{- printf "http://%s.%s.svc.cluster.local:7437" (include "agentops-platform.engram.serviceName" .) .Values.agentNamespace }}
+{{- define "agentops-platform.memory.url" -}}
+{{- printf "http://%s.%s.svc.cluster.local:7437" (include "agentops-platform.memory.serviceName" .) .Values.agentNamespace }}
 {{- end }}
 
 {{/*

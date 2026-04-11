@@ -95,21 +95,22 @@ agentops-console:
       memory: 128Mi
 
 # =============================================================================
-# Engram — Memory Backend (inline templates, not a sub-chart)
+# Memory — AgentOps Memory Service (inline templates, not a sub-chart)
+# Purpose-built SQLite + FTS5 memory with relevance-ranked context injection.
 # =============================================================================
-engram:
-  # -- Enable the Engram memory backend
+memory:
+  # -- Enable the memory backend
   enabled: true
 
   image:
-    # -- Engram container image
-    repository: ghcr.io/samyn92/engram
+    # -- Memory service container image
+    repository: ghcr.io/samyn92/agentops-memory
     # -- Image tag
-    tag: latest
+    tag: v0.1.0
     # -- Image pull policy
     pullPolicy: IfNotPresent
 
-  # -- Persistence for Engram SQLite database
+  # -- Persistence for SQLite database
   persistence:
     # -- Storage size
     size: 1Gi

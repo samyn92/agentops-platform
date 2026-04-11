@@ -15,7 +15,7 @@
 │  agentops-platform (umbrella chart)                              │
 │  ├── agentops-operator  (sub-chart, OCI)    ← CRDs + controller │
 │  ├── agentops-console   (sub-chart, OCI)    ← Go BFF + SolidJS  │
-│  ├── engram             (inline templates)  ← memory backend     │
+│  ├── agentops-memory   (inline templates)  ← memory backend     │
 │  └── tempo              (sub-chart, Grafana)← tracing backend    │
 │                                                                  │
 └─────────────────────────────────────────────────────────────────┘
@@ -66,7 +66,7 @@ All core platform components share a **platform version**. When we release `v0.8
 agentops-platform   0.8.0  (umbrella chart)
 ├── agentops-operator  0.8.0  (from agentops-core v0.8.0)
 ├── agentops-console   0.8.0  (from agentops-console v0.8.0)
-├── engram             latest (simple, rarely changes)
+├── agentops-memory     v0.1.0 (purpose-built, own semver)
 └── tempo              1.24.4 (third-party, pinned)
 ```
 
@@ -103,7 +103,7 @@ This matrix is published in the GitHub Release notes and in `NOTES.txt`.
 | `ghcr.io/samyn92/agentops-operator` | agentops-core | Core |
 | `ghcr.io/samyn92/mcp-gateway` | agentops-core | Core |
 | `ghcr.io/samyn92/agentops-console` | agentops-console | Core |
-| `ghcr.io/samyn92/engram` | engram fork | Core |
+| `ghcr.io/samyn92/agentops-memory` | agentops-memory | Core |
 | `ghcr.io/samyn92/agentops-runtime-fantasy` | agentops-runtime | Ecosystem |
 | `ghcr.io/samyn92/agent-channel-webhook` | agent-channels | Ecosystem |
 | `ghcr.io/samyn92/agent-channel-gitlab` | agent-channels | Ecosystem |
@@ -194,14 +194,14 @@ charts/agentops-platform/
     ├── _helpers.tpl              # Name/label helpers + URL resolution
     ├── NOTES.txt                 # Post-install instructions
     ├── namespace.yaml            # agents namespace (conditional)
-    ├── engram-deployment.yaml    # Engram Deployment
-    ├── engram-service.yaml       # Engram ClusterIP Service
-    └── engram-pvc.yaml           # Engram PVC
+    ├── memory-deployment.yaml    # agentops-memory Deployment
+    ├── memory-service.yaml       # agentops-memory ClusterIP Service
+    └── memory-pvc.yaml           # agentops-memory PVC
 ```
 
-**Design choice: Engram as inline templates.** Engram is a simple Deployment + Service + PVC.
+**Design choice: agentops-memory as inline templates.** agentops-memory is a simple Deployment + Service + PVC.
 Creating a separate chart for it would add overhead (separate repo, separate release cycle,
-OCI packaging) with no benefit. If Engram grows in complexity (e.g., HA mode, backup jobs),
+OCI packaging) with no benefit. If it grows in complexity (e.g., HA mode, backup jobs),
 we can extract it to a sub-chart later.
 
 ### agent-factory (Library Chart for Agents)
@@ -307,7 +307,7 @@ helm install agentops oci://ghcr.io/samyn92/charts/agentops-platform \
 This deploys:
 - Operator (CRDs + controller) in `agent-system`
 - Console (BFF + PWA) in `agent-system`
-- Engram (memory) in `agents` namespace
+- agentops-memory (memory) in `agents` namespace
 - Tempo (tracing) in `agent-system`
 - Creates the `agents` namespace
 
@@ -317,7 +317,7 @@ This deploys:
 helm install agentops oci://ghcr.io/samyn92/charts/agentops-platform \
   --namespace agent-system --create-namespace \
   --set agentops-console.enabled=false \
-  --set engram.enabled=false \
+  --set memory.enabled=false \
   --set tempo.enabled=false
 ```
 
@@ -369,8 +369,8 @@ All artifacts are pushed to `ghcr.io/samyn92/`. Versioning: tag `v*` → strip `
 | No CI workflow for agentops-console | Missing | Add lint/test/vet on PRs |
 | No multi-arch Docker builds | All repos | Add `platforms: linux/amd64,linux/arm64` to build-push-action |
 | agent-channels uses Go 1.24 | Version drift | Upgrade to 1.26 |
-| Engram has no local source/Dockerfile | Deployed from pre-built image | Document the fork, consider upstream contrib |
+| agentops-memory has own source and Dockerfile | Built from `samyn92/agentops-memory` | Image: `ghcr.io/samyn92/agentops-memory` |
 | No Flux/ArgoCD HelmRelease manifests | Not in repos | Add to homecluster GitOps repo for k3s |
 | Console chart env auto-wiring | Implemented in umbrella values | Users set TEMPO_URL/ENGRAM_URL_OVERRIDE via values |
-| NetworkPolicy for Engram/Tempo | Not yet | Add optional NetworkPolicy templates |
+| NetworkPolicy for agentops-memory/Tempo | Not yet | Add optional NetworkPolicy templates |
 | PodDisruptionBudget | Not yet | Add for operator and console |
