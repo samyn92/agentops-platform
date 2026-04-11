@@ -57,7 +57,7 @@ jobs:
         id: create-pr
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PLATFORM_DISPATCH_TOKEN }}
           add-paths: |
             charts/agentops-platform/Chart.yaml
             charts/agentops-platform/Chart.lock
@@ -78,5 +78,5 @@ jobs:
       - name: Enable auto-merge
         if: steps.create-pr.outputs.pull-request-number
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PLATFORM_DISPATCH_TOKEN }}
         run: gh pr merge ${{ steps.create-pr.outputs.pull-request-number }} --auto --squash
