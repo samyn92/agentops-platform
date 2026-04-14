@@ -5,7 +5,7 @@
 # Prerequisites:
 #   - Secret "llm-api-keys" with key "ANTHROPIC_API_KEY" in the agents namespace
 #   - AgentTool CRs from tools.yaml applied first
-#   - Engram running (memory.serverRef points to it)
+#   - agentops-memory running (memory.serverRef points to it)
 apiVersion: agents.agentops.io/v1alpha1
 kind: Agent
 metadata:
@@ -16,7 +16,7 @@ spec:
   model: anthropic/claude-sonnet-4-20250514
 
   # Runtime
-  image: ghcr.io/samyn92/agentops-runtime-fantasy:latest
+  image: ghcr.io/samyn92/agentops-runtime-fantasy:0.7.3
   builtinTools:
     - bash
     - read
@@ -45,9 +45,9 @@ spec:
     - name: github
     - name: kubectl
 
-  # Memory (Engram integration)
+  # Memory (agentops-memory integration)
   memory:
-    serverRef: engram
+    serverRef: agentops-memory
 
   # Identity
   systemPrompt: |
@@ -67,10 +67,6 @@ spec:
   # Environment
   env:
     WORKSPACE: /data/repos
-
-  # Persistent storage for cloned repos
-  storage:
-    size: 5Gi
 
   # Safety
   toolHooks:

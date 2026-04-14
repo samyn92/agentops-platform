@@ -8,6 +8,8 @@ metadata:
     {{- include "agentops-platform.labels" . | nindent 4 }}
     app.kubernetes.io/component: memory
     app.kubernetes.io/name: agentops-memory
+  annotations:
+    "helm.sh/resource-policy": keep
 spec:
   accessModes:
     - ReadWriteOnce

@@ -34,6 +34,17 @@ Memory service (in-cluster):
   Agents reference it via: memory.serverRef: {{ include "agentops-platform.memory.serviceName" . }}
 {{- end }}
 
+{{- if and (index .Values "agentops-console" "enabled") (or .Values.memory.enabled .Values.tempo.enabled) }}
+
+Console env wiring (set these if auto-resolution shows empty values):
+{{- if .Values.tempo.enabled }}
+  --set 'agentops-console.env[0].name=TEMPO_URL,agentops-console.env[0].value={{ include "agentops-platform.tempo.url" . }}'
+{{- end }}
+{{- if .Values.memory.enabled }}
+  --set 'agentops-console.env[1].name=ENGRAM_URL_OVERRIDE,agentops-console.env[1].value={{ include "agentops-platform.memory.url" . }}'
+{{- end }}
+{{- end }}
+
 {{- if .Values.tempo.enabled }}
 
 Tempo endpoints (in-cluster):

@@ -34,7 +34,7 @@ agentops-operator:
   resources:
     limits:
       cpu: 500m
-      memory: 128Mi
+      memory: 256Mi
     requests:
       cpu: 10m
       memory: 64Mi
@@ -53,13 +53,17 @@ agentops-console:
     tag: ""
 
   # -- Console BFF environment variables
-  # Tempo and Engram URLs are auto-wired from the platform release context.
-  # Override here only if you run Tempo/Engram outside this release.
+  # IMPORTANT: Helm values.yaml cannot reference templates. Set these URLs
+  # based on your release name and namespace at install time:
+  #   helm install agentops charts/agentops-platform \
+  #     --set agentops-console.env[0].value=http://agentops-agentops-platform-tempo.<ns>.svc.cluster.local:3200 \
+  #     --set agentops-console.env[1].value=http://agentops-agentops-platform-memory.agents.svc.cluster.local:7437
+  # Or override the entire env block in your values override file.
   env:
     - name: TEMPO_URL
-      value: ""       # auto-resolved at template time if empty (see NOTES.txt)
+      value: ""
     - name: ENGRAM_URL_OVERRIDE
-      value: ""       # auto-resolved at template time if empty
+      value: ""
 
   # -- Console settings
   console:
@@ -141,8 +145,20 @@ tempo:
   enabled: true
 
   tempo:
+    # -- Disable mem-ballast (deprecated in Tempo 2.x; Go GC handles it).
+    # Without this the chart default (1024 MB) exceeds the 512Mi memory limit.
+    memBallastSizeMbs: 0
+
     # -- Retention period for traces
     retention: 72h
+
+    # -- Ingestion rate limits to prevent OOM on the 512Mi pod
+    overrides:
+      defaults:
+        ingestion:
+          rate_limit_bytes: 15000000   # 15 MB/s
+          burst_size_bytes: 20000000   # 20 MB burst
+        max_bytes_per_trace: 5000000   # 5 MB per trace
 
     storage:
       trace:

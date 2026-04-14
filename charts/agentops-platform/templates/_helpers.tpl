@@ -65,5 +65,5 @@ Tempo in-cluster URL — resolved from the release name.
 Tempo OTLP gRPC endpoint — for agent tracing.
 */}}
 {{- define "agentops-platform.tempo.otlpEndpoint" -}}
-{{- printf "%s-tempo.%s.svc.cluster.local:4317" .Release.Name .Release.Namespace }}
+{{- printf "http://%s-tempo.%s.svc.cluster.local:4317" .Release.Name .Release.Namespace }}
 {{- end }}
