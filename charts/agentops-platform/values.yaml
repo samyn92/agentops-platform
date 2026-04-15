@@ -11,26 +11,21 @@ global:
   # -- Image pull secrets propagated to all sub-charts and inline templates
   imagePullSecrets: []
   # - name: ghcr-pull-secret
-
 # -- Namespace where agent workloads run (operator creates workloads here)
 agentNamespace: agents
-
 # -- Create the agent namespace as part of this release
 createNamespace: true
-
 # =============================================================================
 # AgentOps Operator
 # =============================================================================
 agentops-operator:
   # -- Enable the AgentOps operator subchart
   enabled: true
-
   image:
     repository: ghcr.io/samyn92/agentops-operator
     pullPolicy: IfNotPresent
     # -- Override tag (defaults to chart appVersion)
     tag: ""
-
   resources:
     limits:
       cpu: 500m
@@ -38,20 +33,17 @@ agentops-operator:
     requests:
       cpu: 10m
       memory: 64Mi
-
 # =============================================================================
 # AgentOps Console — Go BFF + SolidJS PWA
 # =============================================================================
 agentops-console:
   # -- Enable the AgentOps console subchart
   enabled: true
-
   image:
     repository: ghcr.io/samyn92/agentops-console
     pullPolicy: IfNotPresent
     # -- Override tag (defaults to chart appVersion)
     tag: ""
-
   # -- Console BFF environment variables
   # IMPORTANT: Helm values.yaml cannot reference templates. Set these URLs
   # based on your release name and namespace at install time:
@@ -64,20 +56,17 @@ agentops-console:
       value: ""
     - name: ENGRAM_URL_OVERRIDE
       value: ""
-
   # -- Console settings
   console:
     # -- Restrict to a single namespace (empty = all)
     namespace: ""
     webDir: "/app/web/dist"
     dev: false
-
   # -- Service configuration
   service:
     type: ClusterIP
     port: 80
     targetPort: 8080
-
   # -- Ingress for external access to the console
   ingress:
     enabled: false
@@ -89,7 +78,6 @@ agentops-console:
           - path: /
             pathType: Prefix
     tls: []
-
   resources:
     limits:
       cpu: 500m
@@ -97,7 +85,6 @@ agentops-console:
     requests:
       cpu: 100m
       memory: 128Mi
-
 # =============================================================================
 # Memory — AgentOps Memory Service (inline templates, not a sub-chart)
 # Purpose-built SQLite + FTS5 memory with relevance-ranked context injection.
@@ -105,22 +92,19 @@ agentops-console:
 memory:
   # -- Enable the memory backend
   enabled: true
-
   image:
     # -- Memory service container image
     repository: ghcr.io/samyn92/agentops-memory
     # -- Image tag (updated automatically by dependency-update workflow)
-    tag: "0.2.0"
+    tag: "0.3.0"
     # -- Image pull policy
     pullPolicy: IfNotPresent
-
   # -- Persistence for SQLite database
   persistence:
     # -- Storage size
     size: 1Gi
     # -- Storage class (leave empty for cluster default)
     storageClassName: ""
-
   # -- Resource requests and limits
   resources:
     limits:
@@ -129,37 +113,31 @@ memory:
     requests:
       cpu: 10m
       memory: 32Mi
-
   # -- Node selector
   nodeSelector: {}
   # -- Tolerations
   tolerations: []
   # -- Affinity rules
   affinity: {}
-
 # =============================================================================
 # Tempo — Distributed Tracing
 # =============================================================================
 tempo:
   # -- Enable Grafana Tempo for trace collection
   enabled: true
-
   tempo:
     # -- Disable mem-ballast (deprecated in Tempo 2.x; Go GC handles it).
     # Without this the chart default (1024 MB) exceeds the 512Mi memory limit.
     memBallastSizeMbs: 0
-
     # -- Retention period for traces
     retention: 72h
-
     # -- Ingestion rate limits to prevent OOM on the 512Mi pod
     overrides:
       defaults:
         ingestion:
-          rate_limit_bytes: 15000000   # 15 MB/s
-          burst_size_bytes: 20000000   # 20 MB burst
-        max_bytes_per_trace: 5000000   # 5 MB per trace
-
+          rate_limit_bytes: 15000000 # 15 MB/s
+          burst_size_bytes: 20000000 # 20 MB burst
+        max_bytes_per_trace: 5000000 # 5 MB per trace
     storage:
       trace:
         # -- Storage backend: local, s3, gcs, azure
@@ -168,7 +146,6 @@ tempo:
           path: /var/tempo/traces
         wal:
           path: /var/tempo/wal
-
     # -- OTLP receiver configuration
     receivers:
       otlp:
@@ -179,25 +156,20 @@ tempo:
           http:
             # -- HTTP endpoint for OTLP ingest
             endpoint: "0.0.0.0:4318"
-
     # -- Enable trace search (required for console Traces panel)
     searchEnabled: true
-
     # -- Metrics generator (disabled — keep footprint minimal)
     metricsGenerator:
       enabled: false
-
   # -- Tempo server settings
   server:
     http_listen_port: 3200
-
   # -- Persistence for local storage backend
   persistence:
     enabled: true
     size: 5Gi
     # -- Storage class (leave empty for cluster default)
     storageClassName: ""
-
   # -- Resource limits for Tempo pod
   resources:
     limits:
@@ -206,7 +178,6 @@ tempo:
     requests:
       cpu: 50m
       memory: 128Mi
-
   # -- Service configuration
   service:
     type: ClusterIP
