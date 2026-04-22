@@ -45,17 +45,13 @@ agentops-console:
     # -- Override tag (defaults to chart appVersion)
     tag: ""
   # -- Console BFF environment variables
-  # IMPORTANT: Helm values.yaml cannot reference templates. Set these URLs
-  # based on your release name and namespace at install time:
-  #   helm install agentops charts/agentops-platform \
-  #     --set agentops-console.env[0].value=http://agentops-agentops-platform-tempo.<ns>.svc.cluster.local:3200 \
-  #     --set agentops-console.env[1].value=http://agentops-agentops-platform-memory.agents.svc.cluster.local:7437
-  # Or override the entire env block in your values override file.
-  env:
-    - name: TEMPO_URL
-      value: ""
-    - name: ENGRAM_URL_OVERRIDE
-      value: ""
+  # Tempo and Memory URLs are auto-wired via the agentops-platform-console-env ConfigMap.
+  # Add any extra env vars here:
+  env: []
+  # -- Load auto-wired service URLs from the platform ConfigMap
+  envFrom:
+    - configMapRef:
+        name: agentops-platform-console-env
   # -- Console settings
   console:
     # -- Restrict to a single namespace (empty = all)
