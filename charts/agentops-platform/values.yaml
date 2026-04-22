@@ -131,12 +131,9 @@ tempo:
     memBallastSizeMbs: 0
     # -- Retention period for traces
     retention: 72h
-    # -- Ingestion rate limits to prevent OOM on the 512Mi pod
+    # -- Ingestion rate limits (using Tempo defaults for compatibility)
     overrides:
-      ingestion:
-        rate_limit_bytes: 15000000 # 15 MB/s
-        burst_size_bytes: 20000000 # 20 MB burst
-      max_bytes_per_trace: 5000000 # 5 MB per trace
+      defaults: null
     storage:
       trace:
         # -- Storage backend: local, s3, gcs, azure
