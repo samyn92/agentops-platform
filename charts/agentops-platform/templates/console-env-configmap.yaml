@@ -14,4 +14,7 @@ data:
   {{- if .Values.memory.enabled }}
   ENGRAM_URL_OVERRIDE: {{ include "agentops-platform.memory.url" . | quote }}
   {{- end }}
+  {{- if .Values.nats.enabled }}
+  NATS_URL: {{ include "agentops-platform.nats.url" . | quote }}
+  {{- end }}
 {{- end }}

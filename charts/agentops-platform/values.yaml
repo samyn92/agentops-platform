@@ -163,13 +163,34 @@ tempo:
     # -- Storage class (leave empty for cluster default)
     storageClassName: ""
   # -- Resource limits for Tempo pod
-  resources:
-    limits:
-      cpu: 500m
-      memory: 512Mi
-    requests:
-      cpu: 50m
-      memory: 128Mi
   # -- Service configuration
   service:
     type: ClusterIP
+
+# =============================================================================
+# NATS — Lightweight Messaging for FEP Events
+# The runtime publishes Fantasy Event Protocol events to NATS subjects
+# (agents.{ns}.{name}.fep.{type}), and the console subscribes for real-time
+# delivery to browsers via SSE.
+# =============================================================================
+nats:
+  # -- Enable NATS messaging
+  enabled: true
+  config:
+    cluster:
+      enabled: false
+    jetstream:
+      enabled: false
+  # -- Resource limits for a minimal single-node NATS
+  container:
+    merge:
+      resources:
+        limits:
+          cpu: 200m
+          memory: 64Mi
+        requests:
+          cpu: 10m
+          memory: 16Mi
+  # -- Disable config reloader sidecar (not needed for single-node)
+  reloader:
+    enabled: false

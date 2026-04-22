@@ -67,3 +67,10 @@ Tempo OTLP gRPC endpoint — for agent tracing.
 {{- define "agentops-platform.tempo.otlpEndpoint" -}}
 {{- printf "http://%s-tempo.%s.svc.cluster.local:4317" .Release.Name .Release.Namespace }}
 {{- end }}
+
+{{/*
+NATS in-cluster URL — used by runtime (publisher) and console (subscriber).
+*/}}
+{{- define "agentops-platform.nats.url" -}}
+{{- printf "nats://%s-nats.%s.svc.cluster.local:4222" .Release.Name .Release.Namespace }}
+{{- end }}
