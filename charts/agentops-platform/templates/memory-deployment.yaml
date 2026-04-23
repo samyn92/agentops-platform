@@ -29,7 +29,10 @@ spec:
       securityContext:
         runAsNonRoot: true
         runAsUser: 65534
+        runAsGroup: 65534
         fsGroup: 65534
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: memory
           image: "{{ .Values.memory.image.repository }}:{{ .Values.memory.image.tag }}"
@@ -64,6 +67,7 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
+            runAsGroup: 65534
             capabilities:
               drop:
                 - ALL
