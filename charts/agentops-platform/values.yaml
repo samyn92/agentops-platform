@@ -279,3 +279,6 @@ nats:
   # -- Disable config reloader sidecar (not needed for single-node)
   reloader:
     enabled: false
+  # -- Disable nats-box debug container (fails Kyverno policies, not needed)
+  natsBox:
+    enabled: false
