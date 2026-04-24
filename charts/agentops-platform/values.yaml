@@ -53,6 +53,11 @@ agentops-operator:
     requests:
       cpu: 10m
       memory: 64Mi
+  # -- RBAC mode: set namespaced=true when the deploying SA cannot create ClusterRoles
+  rbac:
+    create: true
+    namespaced: false
+    watchNamespaces: []
 
 # =============================================================================
 # AgentOps Console — Go BFF + SolidJS PWA
@@ -119,6 +124,11 @@ agentops-console:
     requests:
       cpu: 100m
       memory: 128Mi
+  # -- RBAC mode: set namespaced=true when the deploying SA cannot create ClusterRoles
+  rbac:
+    create: true
+    namespaced: false
+    watchNamespaces: []
 
 # =============================================================================
 # Memory — AgentOps Memory Service (inline templates, not a sub-chart)
