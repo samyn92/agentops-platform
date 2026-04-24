@@ -179,16 +179,16 @@ tempo:
     fsGroup: 10001
     seccompProfile:
       type: RuntimeDefault
-  # -- Container-level security context (Grafana Tempo chart value key)
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: true
-    capabilities:
-      drop:
-        - ALL
-    seccompProfile:
-      type: RuntimeDefault
+  # -- Container-level security context (nested under tempo: in this chart)
   tempo:
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+          - ALL
+      seccompProfile:
+        type: RuntimeDefault
     # -- Disable mem-ballast (deprecated in Tempo 2.x; Go GC handles it).
     # Without this the chart default (1024 MB) exceeds the 512Mi memory limit.
     memBallastSizeMbs: 0
