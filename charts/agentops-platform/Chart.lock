@@ -1,7 +1,7 @@
 dependencies:
 - name: agentops-operator
   repository: oci://ghcr.io/samyn92/charts
-  version: 0.13.0
+  version: 0.13.1
 - name: agentops-console
   repository: oci://ghcr.io/samyn92/charts
   version: 0.11.4
@@ -11,5 +11,5 @@ dependencies:
 - name: nats
   repository: https://nats-io.github.io/k8s/helm/charts
   version: 2.12.6
-digest: sha256:b65876757285209799f24dabda794aff1e91a598b0d59b05d74ae9dee1b7604c
-generated: "2026-05-04T20:58:45.674782384+02:00"
+digest: sha256:d4a0dc7dbffa434f6fec10acb257ce484a8164d76548667f55559304dac313a0
+generated: "2026-05-04T19:31:54.904545254Z"
