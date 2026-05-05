@@ -68,7 +68,6 @@ jobs:
           token: ${{ secrets.PLATFORM_DISPATCH_TOKEN }}
           add-paths: |
             charts/agentops-platform/Chart.yaml
-            charts/agentops-platform/Chart.lock
             charts/agentops-platform/values.yaml
           branch: deps/${{ github.event.client_payload.component }}-${{ github.event.client_payload.version }}
           commit-message: "deps: bump ${{ github.event.client_payload.component }} to ${{ github.event.client_payload.version }}"

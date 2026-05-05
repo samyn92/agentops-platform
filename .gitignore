@@ -1,6 +1,10 @@
 # Helm dependency archives (downloaded by `helm dependency build`)
-# Chart.lock IS committed — pins resolved dependency versions + digests for reproducible builds
 charts/agentops-platform/charts/*.tgz
+
+# Chart.lock — not committed. Chart.yaml pins exact versions (no ranges),
+# so the lock only adds digests which change on every OCI push. Regenerated
+# by `helm dependency update` in the release workflow.
+charts/agentops-platform/Chart.lock
 
 # Packaged chart output
 dist/

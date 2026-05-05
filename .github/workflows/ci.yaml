@@ -28,7 +28,7 @@ jobs:
           helm repo update
 
       - name: Helm Dependency Build
-        run: helm dependency build charts/agentops-platform
+        run: helm dependency update charts/agentops-platform
 
       - name: Helm Lint
         run: helm lint charts/agentops-platform

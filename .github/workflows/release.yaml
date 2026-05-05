@@ -45,8 +45,8 @@ jobs:
           helm repo add nats https://nats-io.github.io/k8s/helm/charts
           helm repo update
 
-      - name: Helm Dependency Build
-        run: helm dependency build charts/agentops-platform
+      - name: Helm Dependency Update
+        run: helm dependency update charts/agentops-platform
 
       - name: Helm Lint
         run: helm lint charts/agentops-platform
@@ -64,6 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          gh release delete "${{ github.ref_name }}" --yes 2>/dev/null || true
           gh release create "${{ github.ref_name }}" \
             --title "AgentOps Platform ${{ github.ref_name }}" \
             --generate-notes \
