@@ -10,6 +10,7 @@ metadata:
 data:
   {{- if .Values.tempo.enabled }}
   TEMPO_URL: {{ include "agentops-platform.tempo.url" . | quote }}
+  OTEL_EXPORTER_OTLP_ENDPOINT: {{ include "agentops-platform.tempo.otlpEndpoint" . | quote }}
   {{- end }}
   {{- if .Values.memory.enabled }}
   ENGRAM_URL_OVERRIDE: {{ include "agentops-platform.memory.url" . | quote }}
