@@ -27,7 +27,7 @@ keywords:
 dependencies:
   # -- AgentOps operator: CRDs, controllers, RBAC
   - name: agentops-operator
-    version: "0.15.4"
+    version: "0.15.5"
     repository: "oci://ghcr.io/samyn92/charts"
     condition: agentops-operator.enabled
   # -- AgentOps console: Go BFF + SolidJS PWA
