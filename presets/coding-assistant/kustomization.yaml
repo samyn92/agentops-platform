@@ -4,5 +4,4 @@ kind: Kustomization
 namespace: agents
 
 resources:
-  - tools.yaml
   - agent.yaml
